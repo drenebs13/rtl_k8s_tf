@@ -1,0 +1,64 @@
+---
+# Source: rlt-test/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-rlt-test
+  labels:
+    app: rlt-test
+    chart: rlt-test-0.1.0
+    release: my
+    heritage: Helm
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: rlt-test
+    release: my
+---
+# Source: rlt-test/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-rlt-test
+  labels:
+    app: rlt-test
+    chart: rlt-test-0.1.0
+    release: my
+    heritage: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rlt-test
+      release: my
+  template:
+    metadata:
+      labels:
+        app: rlt-test
+        release: my
+    spec:
+      containers:
+        - name: rlt-test
+          image: "gcr.io/new-terraform-k8s/test:latest"
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 10
+          resources:
+            {}
